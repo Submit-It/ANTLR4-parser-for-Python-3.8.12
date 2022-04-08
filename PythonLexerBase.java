@@ -93,17 +93,21 @@ public abstract class PythonLexerBase extends Lexer {
             setCurrentAndFollowingTokens();
             handleStartOfInput();
             switch (_curToken.getType()) {
-                case PythonLexer.OPEN_PAREN, PythonLexer.OPEN_BRACK, PythonLexer.OPEN_BRACE -> {
+                case PythonLexer.OPEN_PAREN:
+                case PythonLexer.OPEN_BRACK:
+                case PythonLexer.OPEN_BRACE:{
                     _opened++;
                     addPendingToken(_curToken);
                 }
-                case PythonLexer.CLOSE_PAREN, PythonLexer.CLOSE_BRACK, PythonLexer.CLOSE_BRACE -> {
+                case PythonLexer.CLOSE_PAREN:
+                case PythonLexer.CLOSE_BRACK:
+                case PythonLexer.CLOSE_BRACE: {
                     _opened--;
                     addPendingToken(_curToken);
                 }
-                case PythonLexer.NEWLINE -> handleNEWLINEtoken();
-                case EOF -> handleEOFtoken();
-                default -> addPendingToken(_curToken);
+                case PythonLexer.NEWLINE: handleNEWLINEtoken();
+                case EOF: handleEOFtoken();
+                default: addPendingToken(_curToken);
             }
         }
     }
@@ -174,10 +178,24 @@ public abstract class PythonLexerBase extends Lexer {
     }
 
     private boolean isNextTokenNewlineOrComment() {
-        return switch (_ffgToken.getType()) { //*** https://docs.python.org/3/reference/lexical_analysis.html#blank-lines
-            case PythonLexer.NEWLINE, PythonLexer.COMMENT, PythonLexer.TYPE_COMMENT -> true;
-            default -> false;
-        };
+
+        switch(_ffgToken.getType()){
+            case PythonLexer.NEWLINE:
+            case PythonLexer.COMMENT:
+            case PythonLexer.TYPE_COMMENT: 
+                return  true;
+            default: 
+                return false;
+        }
+
+        //return isNext;
+        // return switch (_ffgToken.getType()) { //*** https://docs.python.org/3/reference/lexical_analysis.html#blank-lines
+        //     case PythonLexer.NEWLINE:
+        //     case PythonLexer.COMMENT:
+        //     case PythonLexer.TYPE_COMMENT: true;
+        //     default: false;
+        // };
+        
     }
 
     private void insertIndentDedentTokens(int curIndentLength) {
@@ -209,9 +227,10 @@ public abstract class PythonLexerBase extends Lexer {
 
     private void insertTrailingTokens() {
         switch (_lastPendingTokenTypeFromDefaultChannel) {
-            case PythonLexer.NEWLINE, PythonLexer.DEDENT -> { // no need for trailing NEWLINE token
+            case PythonLexer.NEWLINE:
+            case PythonLexer.DEDENT: { // no need for trailing NEWLINE token
             }
-            default -> createAndAddPendingToken(PythonLexer.NEWLINE, _ffgToken); // insert before the _ffgToken
+            default: createAndAddPendingToken(PythonLexer.NEWLINE, _ffgToken); // insert before the _ffgToken
             //         insert an extra trailing NEWLINE token that serves as the end of the last statement
         }
         insertIndentDedentTokens(0); // Now insert as much trailing DEDENT tokens as needed to the token stream
@@ -263,11 +282,11 @@ public abstract class PythonLexerBase extends Lexer {
         int length = 0;
         for (int i = 0; i < WS.length(); i++) {
             switch (WS.charAt(i)) {
-                case ' ' -> { // A normal space char
+                case ' ':{ // A normal space char
                     _wasSpaceIndentation = true;
                     length += 1;
                 }
-                case '\t' -> {
+                case '\t':{
                     _lastLineOfTabbedIndentation = _curToken.getLine();
                     length += TAB_LENGTH - (length % TAB_LENGTH);
                 }
